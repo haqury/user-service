@@ -1,0 +1,14 @@
+# Игнорируемые файлы для Docker
+.git
+.gitignore
+*.md
+Dockerfile
+.dockerignore
+bin/
+pkg/gen/
+test/
+coverage.out
+*.test
+*.test.exe
+.env
+config.local.yaml

@@ -1,0 +1,34 @@
+server:
+  host: "0.0.0.0"
+  port: 8081
+  grpc_port: 9091
+  mode: "debug"
+  read_timeout: 30s
+  write_timeout: 30s
+
+database:
+  host: "localhost"
+  port: 5432
+  user: "user"
+  password: "password"
+  name: "user_service"
+  ssl_mode: "disable"
+  max_connections: 10
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+
+jwt:
+  secret: "change-this-secret-key-in-production"
+  expiration: 24h
+
+log:
+  level: "info"
+  format: "json"
+
+services:
+  api_gateway_url: "http://localhost:8080"
+  video_service_url: "http://localhost:8082"

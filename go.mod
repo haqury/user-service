@@ -1,0 +1,24 @@
+module user-service
+
+go 1.24.0
+
+toolchain go1.24.4
+
+require (
+	github.com/gorilla/mux v1.8.1
+	go.uber.org/zap v1.24.0
+	golang.org/x/crypto v0.46.0
+	google.golang.org/grpc v1.78.0
+	google.golang.org/protobuf v1.36.11
+	gopkg.in/yaml.v3 v3.0.1
+)
+
+require (
+	github.com/stretchr/testify v1.8.3 // indirect
+	go.uber.org/atomic v1.7.0 // indirect
+	go.uber.org/multierr v1.6.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251029180050-ab9386a59fda // indirect
+)

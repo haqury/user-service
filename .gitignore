@@ -1,0 +1,39 @@
+# Binaries
+bin/
+user-service
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Generated files
+pkg/gen/
+
+# Dependency directories
+vendor/
+
+# Test files
+*.test
+*.test.exe
+coverage.out
+*.cover
+
+# Config files
+config.yaml
+.env
+*.local.yaml
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+logs/

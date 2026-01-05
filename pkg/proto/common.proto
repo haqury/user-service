@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package common;
+option go_package = "userservice/pkg/gen";
+
+// Общий ответ API
+message ApiResponse {
+  string status = 1;
+  string message = 2;
+  int64 timestamp = 3;
+  map<string, string> metadata = 4;
+}
+
+// Пустой запрос
+message EmptyRequest {}
+
+// Ошибка
+message Error {
+  string code = 1;
+  string message = 2;
+  map<string, string> details = 3;
+}
+
+// Пагинация
+message Pagination {
+  int32 page = 1;
+  int32 limit = 2;
+  int32 total = 3;
+}

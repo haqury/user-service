@@ -1,0 +1,149 @@
+syntax = "proto3";
+
+package user;
+option go_package = "userservice/pkg/gen";
+
+import "common.proto";
+
+// Пользователь
+message User {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string phone = 4;
+  string status = 5; // active, inactive, banned
+  int64 created_at = 6;
+  int64 updated_at = 7;
+  
+  // Настройки пользователя
+  message UserSettings {
+    string default_quality = 1;
+    int32 max_parallel_streams = 2;
+    bool auto_start_recording = 3;
+    bool notifications_enabled = 4;
+    string timezone = 5;
+    string language = 6;
+  }
+  
+  // Конфигурация стриминга
+  message StreamingConfig {
+    string server_url = 1;
+    int32 server_port = 2;
+    bool use_ssl = 3;
+    string api_key = 4;
+    string stream_endpoint = 5;
+    repeated string allowed_ips = 6;
+    int32 max_bitrate = 7;
+    int32 max_resolution = 8;
+    repeated string allowed_codecs = 9;
+  }
+  
+  // Статистика пользователя
+  message UserStats {
+    int64 total_streams = 1;
+    int64 total_duration = 2; // в секундах
+    int64 total_storage_used = 3; // в байтах
+    int64 current_streams = 4;
+    int32 successful_logins = 5;
+    int32 failed_logins = 6;
+    int64 last_login = 7;
+    int64 last_activity = 8;
+  }
+  
+  UserSettings settings = 8;
+  StreamingConfig streaming_config = 9;
+  UserStats stats = 10;
+  map<string, string> metadata = 11;
+}
+
+// Запросы
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserByUsernameRequest {
+  string username = 1;
+}
+
+message CreateUserRequest {
+  string username = 1;
+  string email = 2;
+  string phone = 3;
+  string password = 4;
+}
+
+message UpdateUserRequest {
+  string user_id = 1;
+  User user = 2;
+}
+
+message DeleteUserRequest {
+  string user_id = 1;
+}
+
+message ListUsersRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  string filter = 3;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 total_pages = 4;
+}
+
+// Аутентификация
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+  string client_info = 3; // JSON с информацией о клиенте
+}
+
+message LoginResponse {
+  string token = 1;
+  User user = 2;
+  int64 expires_at = 3;
+  string refresh_token = 4;
+}
+
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  User user = 2;
+  string message = 3;
+}
+
+// Получение конфигурации стриминга
+message GetStreamingConfigRequest {
+  string user_id = 1;
+  string client_id = 2;
+}
+
+// Сервис пользователей
+service UserService {
+  // Базовые операции с пользователями
+  rpc GetUser(GetUserRequest) returns (User);
+  rpc GetUserByUsername(GetUserByUsernameRequest) returns (User);
+  rpc CreateUser(CreateUserRequest) returns (User);
+  rpc UpdateUser(UpdateUserRequest) returns (User);
+  rpc DeleteUser(DeleteUserRequest) returns (common.ApiResponse);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  
+  // Аутентификация
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc Logout(common.EmptyRequest) returns (common.ApiResponse);
+  
+  // Конфигурация стриминга
+  rpc GetStreamingConfig(GetStreamingConfigRequest) returns (User.StreamingConfig);
+  rpc UpdateStreamingConfig(UpdateUserRequest) returns (User.StreamingConfig);
+  
+  // Статистика
+  rpc UpdateUserStats(UpdateUserRequest) returns (common.ApiResponse);
+  rpc GetUserStats(GetUserRequest) returns (User.UserStats);
+}
