@@ -2,12 +2,14 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+	"user-service/internal/config"
 
 	"user-service/internal/controller"
 	"user-service/internal/repository"
@@ -16,7 +18,7 @@ import (
 
 // Application - основная структура приложения
 type Application struct {
-	Config     *Config
+	Config     *config.Config
 	HTTPServer *http.Server
 	GRPCServer interface{} // Можно добавить позже
 	Services   *service.Services
@@ -24,18 +26,8 @@ type Application struct {
 	Controller *controller.Controller
 }
 
-// Config - конфигурация приложения
-type Config struct {
-	HTTPPort string
-	GRPCPort string
-	Env      string
-	Database struct {
-		DSN string
-	}
-}
-
 // New создает новое приложение
-func New(config *Config) *Application {
+func New(c *config.Config) *Application {
 	// Инициализируем репозитории
 	repos := repository.New()
 
@@ -49,7 +41,7 @@ func New(config *Config) *Application {
 	mux := ctrl.RegisterRoutes()
 
 	server := &http.Server{
-		Addr:         ":" + config.HTTPPort,
+		Addr:         ":" + c.HTTPPort,
 		Handler:      mux,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
@@ -57,12 +49,22 @@ func New(config *Config) *Application {
 	}
 
 	return &Application{
-		Config:     config,
+		Config:     c,
 		HTTPServer: server,
 		Services:   services,
 		Repos:      repos,
 		Controller: ctrl,
 	}
+}
+
+// NewWithConfig создает приложение с конфигурацией из файла или env
+func NewWithConfig(cfgPath string, grpcPort string) (*Application, error) {
+	c, err := config.NewConfig(cfgPath, grpcPort)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create config: %w", err)
+	}
+
+	return New(c), nil
 }
 
 // Run запускает приложение

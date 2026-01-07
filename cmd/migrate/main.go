@@ -8,86 +8,24 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
+	"user-service/internal/config"
 
 	_ "github.com/uptrace/bun/driver/pgdriver" // PostgreSQL драйвер
 )
 
-// Config представляет минимальную конфигурацию для миграций
-type Config struct {
-	Database struct {
-		Host     string
-		Port     int
-		User     string
-		Password string
-		Name     string
-		SSLMode  string
-	}
-}
-
-// getEnv возвращает значение переменной окружения или значение по умолчанию
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
-}
-
-// getEnvInt возвращает целочисленное значение переменной окружения или значение по умолчанию
-func getEnvInt(key string, defaultValue int) int {
-	if value := os.Getenv(key); value != "" {
-		if intVal, err := strconv.Atoi(value); err == nil {
-			return intVal
-		}
-	}
-	return defaultValue
-}
-
-// loadConfig загружает конфигурацию из переменных окружения
-func loadConfig() *Config {
-	var cfg Config
-
-	// Database configuration
-	cfg.Database.Host = getEnv("DB_HOST", "localhost")
-	cfg.Database.Port = getEnvInt("DB_PORT", 5432)
-	cfg.Database.User = getEnv("DB_USER", "postgres")
-	cfg.Database.Password = getEnv("DB_PASSWORD", "postgres")
-	cfg.Database.Name = getEnv("DB_NAME", "user_service")
-	cfg.Database.SSLMode = getEnv("DB_SSLMODE", "disable")
-
-	return &cfg
-}
-
-// buildDSN строит строку подключения к PostgreSQL
-func buildDSN(cfg *Config) string {
-	return fmt.Sprintf(
-		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		cfg.Database.User,
-		cfg.Database.Password,
-		cfg.Database.Host,
-		cfg.Database.Port,
-		cfg.Database.Name,
-		cfg.Database.SSLMode,
-	)
-}
-
 func main() {
-	// Загружаем конфигурацию из переменных окружения
-	cfg := loadConfig()
+	// Создаем конфигурацию для миграций
+	c, err := config.NewConfig("", "")
+	if err != nil {
+		log.Fatalf("Failed to create c: %v", err)
+	}
 
-	log.Printf("Using database: %s@%s:%d/%s",
-		cfg.Database.User,
-		cfg.Database.Host,
-		cfg.Database.Port,
-		cfg.Database.Name)
-
-	// Строим DSN
-	dsn := buildDSN(cfg)
+	log.Printf("Using database: %s", c.Database.DSN)
 
 	// Подключаемся к базе данных
-	db, err := sql.Open("pg", dsn)
+	db, err := sql.Open("pg", c.Database.DSN)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -102,7 +40,6 @@ func main() {
 	if err := createMigrationsTable(db); err != nil {
 		log.Fatalf("Failed to create migrations table: %v", err)
 	}
-
 	// Применяем миграции
 	if err := runMigrations(db); err != nil {
 		log.Fatalf("Migration failed: %v", err)
