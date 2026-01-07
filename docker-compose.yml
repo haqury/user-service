@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: user-service-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: user_service
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: user-service-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+
+  user-service:
+    build:
+      context: .
+      dockerfile: deployments/docker/Dockerfile
+    container_name: user-service-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env.docker  # Используем Docker-specific .env файл
+    ports:
+      - "8081:8081"
+      - "9091:9091"
+    volumes:
+      - ./deployments/configs/config.yaml:/app/config.yaml
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

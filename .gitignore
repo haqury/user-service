@@ -6,6 +6,9 @@ user-service
 *.dll
 *.so
 *.dylib
+.env
+.env.*
+!.env.example
 
 # Generated files
 pkg/gen/
