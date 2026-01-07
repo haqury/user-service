@@ -162,10 +162,17 @@ dev:
 	fi
 
 ## 🔧 Управление
-migrate: build
-	@echo "🔄 Running migrations..."
-	@echo "⚠ Migrations not configured for user-service"
-	@echo "Create migrations in db/migrations directory"
+migrate:
+	@echo "🔄 Applying migrations..."
+	go run ./cmd/migrate
+
+migrate-create:
+	@echo "📝 Creating new migration..."
+	@read -p "Enter migration name: " name; \
+	timestamp=$$(date +%Y%m%d%H%M%S); \
+	echo "Creating migration: $${timestamp}_$${name}.sql"; \
+	echo "-- Migration: $${timestamp}_$${name}" > db/migrations/$${timestamp}_$${name}.sql; \
+	echo "✅ Created: db/migrations/$${timestamp}_$${name}.sql"
 
 migrate-create: build
 	@echo "📝 Creating migration..."
