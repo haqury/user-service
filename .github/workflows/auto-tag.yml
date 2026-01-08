@@ -1,0 +1,123 @@
+name: Auto Tag Creation
+
+on:
+  push:
+    branches: [ main ]
+    # Только при пуше в main ветку
+
+jobs:
+  create-tag:
+    name: Create Tag Automatically
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write  # Для создания тегов
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Полная история для анализа коммитов
+
+    - name: Setup Git
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+
+    - name: Get latest tag
+      id: get_tag
+      run: |
+        # Получаем последний тег или используем v0.0.0 если нет тегов
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+        echo "Latest tag: $LATEST_TAG"
+
+    - name: Analyze commits for version bump
+      id: analyze
+      run: |
+        LATEST_TAG="${{ steps.get_tag.outputs.latest_tag }}"
+        
+        # Получаем коммиты с последнего тега
+        if [ "$LATEST_TAG" = "v0.0.0" ]; then
+          # Если нет тегов, берем все коммиты
+          COMMITS=$(git log --oneline --format="%s")
+        else
+          COMMITS=$(git log --oneline "$LATEST_TAG..HEAD" --format="%s")
+        fi
+        
+        echo "Commits since last tag:"
+        echo "$COMMITS"
+        
+        # Извлекаем версию из тега
+        if [[ $LATEST_TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+          MAJOR=${BASH_REMATCH[1]}
+          MINOR=${BASH_REMATCH[2]}
+          PATCH=${BASH_REMATCH[3]}
+        else
+          MAJOR=0
+          MINOR=0
+          PATCH=0
+        fi
+        
+        # Определяем тип изменений
+        MAJOR_BUMP=false
+        MINOR_BUMP=false
+        
+        # Проверяем коммиты на breaking changes (согласно Conventional Commits)
+        if echo "$COMMITS" | grep -qi "BREAKING CHANGE\|^.*!:.*\|^feat!:"; then
+          MAJOR_BUMP=true
+        # Проверяем на новые фичи
+        elif echo "$COMMITS" | grep -qi "^feat:"; then
+          MINOR_BUMP=true
+        fi
+        
+        # Вычисляем новую версию
+        if [ "$MAJOR_BUMP" = true ]; then
+          NEW_MAJOR=$((MAJOR + 1))
+          NEW_MINOR=0
+          NEW_PATCH=0
+        elif [ "$MINOR_BUMP" = true ]; then
+          NEW_MAJOR=$MAJOR
+          NEW_MINOR=$((MINOR + 1))
+          NEW_PATCH=0
+        else
+          # Патч версия для фиксов и других изменений
+          NEW_MAJOR=$MAJOR
+          NEW_MINOR=$MINOR
+          NEW_PATCH=$((PATCH + 1))
+        fi
+        
+        NEW_TAG="v${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
+        echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+        
+        # Проверяем, нужно ли создавать новый тег
+        if [ "$NEW_TAG" = "$LATEST_TAG" ]; then
+          echo "skip_release=true" >> $GITHUB_OUTPUT
+          echo "No version bump needed"
+        else
+          echo "skip_release=false" >> $GITHUB_OUTPUT
+          echo "New tag will be: $NEW_TAG"
+        fi
+
+    - name: Create and push tag
+      if: steps.analyze.outputs.skip_release == 'false'
+      run: |
+        NEW_TAG="${{ steps.analyze.outputs.new_tag }}"
+        
+        # Создаем тег
+        git tag -a "$NEW_TAG" -m "Release $NEW_TAG"
+        
+        # Пушим тег
+        git push origin "$NEW_TAG"
+        
+        echo "Tag $NEW_TAG created and pushed"
+
+    - name: Create GitHub Release
+      if: steps.analyze.outputs.skip_release == 'false'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.analyze.outputs.new_tag }}
+        name: Release ${{ steps.analyze.outputs.new_tag }}
+        generate_release_notes: true
+        draft: false
+        prerelease: false
