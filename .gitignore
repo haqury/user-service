@@ -10,9 +10,6 @@ user-service
 .env.*
 !.env.example
 
-# Generated files
-pkg/gen/
-
 # Dependency directories
 vendor/
 

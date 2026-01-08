@@ -149,7 +149,7 @@ run: build
 run-dev:
 	@echo "🚀 Starting in development mode..."
 	@echo "For hot reload use: make dev"
-	DEBUG=true go run ./cmd/user-service --config config.yaml
+	DEBUG=true go run ./cmd/user-service
 
 dev:
 	@echo "🔥 Starting with hot reload..."
@@ -201,7 +201,7 @@ test:
 test-api:
 	@echo "🧪 Testing API..."
 	@echo "Starting server in background..."
-	@go run ./cmd/user-service --config config.yaml &
+	@go run ./cmd/user-service &
 	@SERVER_PID=$$!
 	@sleep 3
 	@echo "Testing health endpoint..."
@@ -296,7 +296,7 @@ run-dual:
 	@echo "HTTP REST: http://localhost:8081"
 	@echo "gRPC:      localhost:9091"
 	@echo ""
-	go run ./cmd/user-service --config config.yaml --grpc-port=9091
+	go run ./cmd/user-service  --grpc-port=9091
 
 test-dual:
 	@echo "🧪 Testing DUAL API..."
