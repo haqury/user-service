@@ -4,6 +4,8 @@ go 1.24.0
 
 toolchain go1.24.4
 
+replace github.com/haqury/user-service => ./
+
 require (
 	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.5.1
@@ -17,9 +19,7 @@ require (
 
 require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/puzpuzpuz/xsync/v3 v3.4.0 // indirect
-	github.com/stretchr/testify v1.8.3 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/uptrace/bun v1.2.5 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
