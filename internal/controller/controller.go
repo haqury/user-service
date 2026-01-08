@@ -2,8 +2,8 @@ package controller
 
 import (
 	"encoding/json"
+	"github.com/haqury/user-service/internal/service"
 	"net/http"
-	"user-service/internal/service"
 )
 
 type Controller struct {

@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
+	"github.com/haqury/user-service/internal/app"
 	"log"
-	"user-service/internal/app"
 
 	"go.uber.org/zap"
 )

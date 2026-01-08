@@ -3,17 +3,17 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/haqury/user-service/internal/config"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	"user-service/internal/config"
 
-	"user-service/internal/controller"
-	"user-service/internal/repository"
-	"user-service/internal/service"
+	"github.com/haqury/user-service/internal/controller"
+	"github.com/haqury/user-service/internal/repository"
+	"github.com/haqury/user-service/internal/service"
 )
 
 // Application - основная структура приложения

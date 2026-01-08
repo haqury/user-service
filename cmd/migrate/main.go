@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/haqury/user-service/internal/config"
 	"io/fs"
 	"log"
 	"os"
@@ -10,7 +11,6 @@ import (
 	"sort"
 	"strings"
 	"time"
-	"user-service/internal/config"
 
 	_ "github.com/uptrace/bun/driver/pgdriver" // PostgreSQL драйвер
 )

@@ -1,4 +1,4 @@
-module user-service
+module github.com/haqury/user-service
 
 go 1.24.0
 

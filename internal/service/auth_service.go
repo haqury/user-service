@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"user-service/internal/repository"
+	"github.com/haqury/user-service/internal/repository"
 )
 
 type AuthService interface {

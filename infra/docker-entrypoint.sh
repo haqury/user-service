@@ -6,7 +6,7 @@ echo "==========================================="
 
 # Пути
 PROTO_ROOT="pkg/proto"
-OUTPUT_DIR="internal/gen"
+OUTPUT_DIR="pkg/gen"
 INCLUDE_DIRS="-I ${PROTO_ROOT} -I /include"
 
 # Если переданы аргументы, используем их

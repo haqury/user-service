@@ -1,6 +1,6 @@
 package service
 
-import "user-service/internal/repository"
+import "github.com/haqury/user-service/internal/repository"
 
 type Services struct {
 	User UserService

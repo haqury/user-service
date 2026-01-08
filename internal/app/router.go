@@ -1,7 +1,7 @@
 package app
 
 import (
-	"user-service/internal/controller"
+	"github.com/haqury/user-service/internal/controller"
 
 	"github.com/gorilla/mux"
 )
