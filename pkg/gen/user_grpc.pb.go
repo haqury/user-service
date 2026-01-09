@@ -8,9 +8,11 @@ package gen
 
 import (
 	context "context"
+	helpy "github.com/haqury/helpy"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -43,17 +45,17 @@ type UserServiceClient interface {
 	GetUserByUsername(ctx context.Context, in *GetUserByUsernameRequest, opts ...grpc.CallOption) (*User, error)
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*User, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*User, error)
-	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*ApiResponse, error)
+	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*helpy.ApiResponse, error)
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error)
 	// Аутентификация
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	ValidateToken(ctx context.Context, in *ValidateTokenRequest, opts ...grpc.CallOption) (*ValidateTokenResponse, error)
-	Logout(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*ApiResponse, error)
+	Logout(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*helpy.ApiResponse, error)
 	// Конфигурация стриминга
 	GetStreamingConfig(ctx context.Context, in *GetStreamingConfigRequest, opts ...grpc.CallOption) (*User_StreamingConfig, error)
 	UpdateStreamingConfig(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*User_StreamingConfig, error)
 	// Статистика
-	UpdateUserStats(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*ApiResponse, error)
+	UpdateUserStats(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*helpy.ApiResponse, error)
 	GetUserStats(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User_UserStats, error)
 }
 
@@ -101,8 +103,8 @@ func (c *userServiceClient) UpdateUser(ctx context.Context, in *UpdateUserReques
 	return out, nil
 }
 
-func (c *userServiceClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*ApiResponse, error) {
-	out := new(ApiResponse)
+func (c *userServiceClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*helpy.ApiResponse, error) {
+	out := new(helpy.ApiResponse)
 	err := c.cc.Invoke(ctx, UserService_DeleteUser_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -137,8 +139,8 @@ func (c *userServiceClient) ValidateToken(ctx context.Context, in *ValidateToken
 	return out, nil
 }
 
-func (c *userServiceClient) Logout(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*ApiResponse, error) {
-	out := new(ApiResponse)
+func (c *userServiceClient) Logout(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*helpy.ApiResponse, error) {
+	out := new(helpy.ApiResponse)
 	err := c.cc.Invoke(ctx, UserService_Logout_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -164,8 +166,8 @@ func (c *userServiceClient) UpdateStreamingConfig(ctx context.Context, in *Updat
 	return out, nil
 }
 
-func (c *userServiceClient) UpdateUserStats(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*ApiResponse, error) {
-	out := new(ApiResponse)
+func (c *userServiceClient) UpdateUserStats(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*helpy.ApiResponse, error) {
+	out := new(helpy.ApiResponse)
 	err := c.cc.Invoke(ctx, UserService_UpdateUserStats_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -191,17 +193,17 @@ type UserServiceServer interface {
 	GetUserByUsername(context.Context, *GetUserByUsernameRequest) (*User, error)
 	CreateUser(context.Context, *CreateUserRequest) (*User, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*User, error)
-	DeleteUser(context.Context, *DeleteUserRequest) (*ApiResponse, error)
+	DeleteUser(context.Context, *DeleteUserRequest) (*helpy.ApiResponse, error)
 	ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error)
 	// Аутентификация
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	ValidateToken(context.Context, *ValidateTokenRequest) (*ValidateTokenResponse, error)
-	Logout(context.Context, *EmptyRequest) (*ApiResponse, error)
+	Logout(context.Context, *emptypb.Empty) (*helpy.ApiResponse, error)
 	// Конфигурация стриминга
 	GetStreamingConfig(context.Context, *GetStreamingConfigRequest) (*User_StreamingConfig, error)
 	UpdateStreamingConfig(context.Context, *UpdateUserRequest) (*User_StreamingConfig, error)
 	// Статистика
-	UpdateUserStats(context.Context, *UpdateUserRequest) (*ApiResponse, error)
+	UpdateUserStats(context.Context, *UpdateUserRequest) (*helpy.ApiResponse, error)
 	GetUserStats(context.Context, *GetUserRequest) (*User_UserStats, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
@@ -222,7 +224,7 @@ func (UnimplementedUserServiceServer) CreateUser(context.Context, *CreateUserReq
 func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
-func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*ApiResponse, error) {
+func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*helpy.ApiResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
 func (UnimplementedUserServiceServer) ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error) {
@@ -234,7 +236,7 @@ func (UnimplementedUserServiceServer) Login(context.Context, *LoginRequest) (*Lo
 func (UnimplementedUserServiceServer) ValidateToken(context.Context, *ValidateTokenRequest) (*ValidateTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateToken not implemented")
 }
-func (UnimplementedUserServiceServer) Logout(context.Context, *EmptyRequest) (*ApiResponse, error) {
+func (UnimplementedUserServiceServer) Logout(context.Context, *emptypb.Empty) (*helpy.ApiResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
 }
 func (UnimplementedUserServiceServer) GetStreamingConfig(context.Context, *GetStreamingConfigRequest) (*User_StreamingConfig, error) {
@@ -243,7 +245,7 @@ func (UnimplementedUserServiceServer) GetStreamingConfig(context.Context, *GetSt
 func (UnimplementedUserServiceServer) UpdateStreamingConfig(context.Context, *UpdateUserRequest) (*User_StreamingConfig, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateStreamingConfig not implemented")
 }
-func (UnimplementedUserServiceServer) UpdateUserStats(context.Context, *UpdateUserRequest) (*ApiResponse, error) {
+func (UnimplementedUserServiceServer) UpdateUserStats(context.Context, *UpdateUserRequest) (*helpy.ApiResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserStats not implemented")
 }
 func (UnimplementedUserServiceServer) GetUserStats(context.Context, *GetUserRequest) (*User_UserStats, error) {
@@ -407,7 +409,7 @@ func _UserService_ValidateToken_Handler(srv interface{}, ctx context.Context, de
 }
 
 func _UserService_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EmptyRequest)
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -419,7 +421,7 @@ func _UserService_Logout_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: UserService_Logout_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).Logout(ctx, req.(*EmptyRequest))
+		return srv.(UserServiceServer).Logout(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }

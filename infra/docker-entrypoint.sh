@@ -7,7 +7,7 @@ echo "==========================================="
 # Пути
 PROTO_ROOT="pkg/proto"
 OUTPUT_DIR="pkg/gen"
-INCLUDE_DIRS="-I ${PROTO_ROOT} -I /include"
+INCLUDE_DIRS="-I ${PROTO_ROOT} -I /include -I vendor"
 
 # Если переданы аргументы, используем их
 if [ $# -gt 0 ]; then
@@ -22,8 +22,8 @@ else
     # Создаем выходную директорию
     mkdir -p ${OUTPUT_DIR}
 
-    # Ищем все proto файлы рекурсивно
-    find ${PROTO_ROOT} -name "*.proto" | while read proto_file; do
+    # Ищем все proto файлы рекурсивно (исключая vendor)
+    find ${PROTO_ROOT} -name "*.proto" -not -path "*/vendor/*" | while read proto_file; do
         # Определяем путь относительно proto root
         rel_path="${proto_file#${PROTO_ROOT}/}"
         dir_path="$(dirname ${rel_path})"

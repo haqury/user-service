@@ -1,7 +1,7 @@
 .PHONY: help init build run run-dev migrate migrate-create worker test test-api test-db \
         version clean proto proto-all proto-clean proto-help lint vet fmt docker-build \
         docker-run docker-compose-up docker-compose-down install-deps health-check \
-        deps-update generate-docs bench load-test security-check dev
+        deps generate-docs bench load-test security-check dev
 
 # Конфигурация
 APP_NAME = user-service
@@ -274,10 +274,11 @@ install-deps:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	@echo "✅ Dependencies installed"
 
-deps-update:
+deps:
 	@echo "🔄 Updating dependencies..."
 	go get -u ./...
 	go mod tidy
+	go mod vendor
 	@echo "✅ Dependencies updated"
 
 init: install-deps proto

@@ -3,7 +3,8 @@ syntax = "proto3";
 package user;
 option go_package = "userservice/pkg/gen";
 
-import "common.proto";
+import "github.com/haqury/helpy/common.proto";
+import "google/protobuf/empty.proto";
 
 // Пользователь
 message User {
@@ -137,7 +138,7 @@ service UserService {
   // Аутентификация
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
-  rpc Logout(common.EmptyRequest) returns (common.ApiResponse);
+  rpc Logout(google.protobuf.Empty) returns (common.ApiResponse);
   
   // Конфигурация стриминга
   rpc GetStreamingConfig(GetStreamingConfigRequest) returns (User.StreamingConfig);

@@ -8,6 +8,7 @@ replace github.com/haqury/user-service => ./
 
 require (
 	github.com/gorilla/mux v1.8.1
+	github.com/haqury/helpy v0.0.7
 	github.com/joho/godotenv v1.5.1
 	github.com/uptrace/bun/driver/pgdriver v1.2.5
 	go.uber.org/zap v1.24.0
