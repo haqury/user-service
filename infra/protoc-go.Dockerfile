@@ -7,9 +7,11 @@ RUN apk add --no-cache \
     make \
     curl
 
-# Устанавливаем protoc-gen-go и protoc-gen-go-grpc
+# Устанавливаем protoc-gen-go, protoc-gen-go-grpc и protoc-gen-grpc-gateway
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.33.0 && \
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0 && \
+    go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.19.0 && \
+    go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.19.0
 
 # Для поддержки импортов google/api/annotations.proto
 RUN mkdir -p /include && \

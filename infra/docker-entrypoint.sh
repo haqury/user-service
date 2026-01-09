@@ -33,12 +33,15 @@ else
         # Создаем соответствующую структуру в выходной директории
         mkdir -p ${OUTPUT_DIR}/${dir_path}
 
-        # Генерируем код
+        # Генерируем код (Go + gRPC + gRPC-Gateway)
         protoc ${INCLUDE_DIRS} \
             --go_out=${OUTPUT_DIR} \
             --go_opt=paths=source_relative \
             --go-grpc_out=${OUTPUT_DIR} \
             --go-grpc_opt=paths=source_relative \
+            --grpc-gateway_out=${OUTPUT_DIR} \
+            --grpc-gateway_opt=paths=source_relative \
+            --grpc-gateway_opt=generate_unbound_methods=true \
             "${proto_file}"
 
         if [ $? -eq 0 ]; then

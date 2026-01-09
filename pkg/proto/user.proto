@@ -5,6 +5,7 @@ option go_package = "userservice/pkg/gen";
 
 import "github.com/haqury/helpy/common.proto";
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
 // Пользователь
 message User {
@@ -15,6 +16,10 @@ message User {
   string status = 5; // active, inactive, banned
   int64 created_at = 6;
   int64 updated_at = 7;
+  bool is_active = 12; // активен ли пользователь
+  repeated string roles = 13; // роли пользователя (admin, premium, user, etc.)
+  string subscription_tier = 14; // тариф (free, basic, premium)
+  string region = 15; // регион пользователя для роутинга
   
   // Настройки пользователя
   message UserSettings {
@@ -28,15 +33,14 @@ message User {
   
   // Конфигурация стриминга
   message StreamingConfig {
-    string server_url = 1;
-    int32 server_port = 2;
-    bool use_ssl = 3;
-    string api_key = 4;
-    string stream_endpoint = 5;
-    repeated string allowed_ips = 6;
-    int32 max_bitrate = 7;
-    int32 max_resolution = 8;
-    repeated string allowed_codecs = 9;
+    string server_url = 1; // адрес video-service
+    int32 server_port = 2; // порт video-service
+    bool use_ssl = 3; // использовать SSL
+    string api_key = 4; // API ключ для аутентификации
+    string stream_endpoint = 5; // endpoint для стрима (например "/stream")
+    int32 max_bitrate = 7; // максимальный битрейт
+    int32 max_resolution = 8; // максимальное разрешение
+    string codec = 10; // кодек (например "h264")
   }
   
   // Статистика пользователя
@@ -64,6 +68,17 @@ message GetUserRequest {
 
 message GetUserByUsernameRequest {
   string username = 1;
+}
+
+message GetUserByClientIdRequest {
+  string client_id = 1;
+}
+
+message GetUserByClientIdResponse {
+  string user_id = 1;
+  string username = 2;
+  bool is_active = 3;
+  repeated string roles = 4;
 }
 
 message CreateUserRequest {
@@ -128,23 +143,96 @@ message GetStreamingConfigRequest {
 // Сервис пользователей
 service UserService {
   // Базовые операции с пользователями
-  rpc GetUser(GetUserRequest) returns (User);
-  rpc GetUserByUsername(GetUserByUsernameRequest) returns (User);
-  rpc CreateUser(CreateUserRequest) returns (User);
-  rpc UpdateUser(UpdateUserRequest) returns (User);
-  rpc DeleteUser(DeleteUserRequest) returns (common.ApiResponse);
-  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
-  
+  rpc GetUser(GetUserRequest) returns (User) {
+    option (google.api.http) = {
+      get: "/api/v1/users/{user_id}"
+    };
+  }
+
+  rpc GetUserByUsername(GetUserByUsernameRequest) returns (User) {
+    option (google.api.http) = {
+      get: "/api/v1/users/by-username/{username}"
+    };
+  }
+
+  rpc GetUserByClientId(GetUserByClientIdRequest) returns (GetUserByClientIdResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/users/by-client/{client_id}"
+    };
+  }
+
+  rpc CreateUser(CreateUserRequest) returns (User) {
+    option (google.api.http) = {
+      post: "/api/v1/users"
+      body: "*"
+    };
+  }
+
+  rpc UpdateUser(UpdateUserRequest) returns (User) {
+    option (google.api.http) = {
+      put: "/api/v1/users/{user_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteUser(DeleteUserRequest) returns (common.ApiResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/users/{user_id}"
+    };
+  }
+
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/users"
+    };
+  }
+
   // Аутентификация
-  rpc Login(LoginRequest) returns (LoginResponse);
-  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
-  rpc Logout(google.protobuf.Empty) returns (common.ApiResponse);
-  
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/login"
+      body: "*"
+    };
+  }
+
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/validate"
+      body: "*"
+    };
+  }
+
+  rpc Logout(google.protobuf.Empty) returns (common.ApiResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/logout"
+    };
+  }
+
   // Конфигурация стриминга
-  rpc GetStreamingConfig(GetStreamingConfigRequest) returns (User.StreamingConfig);
-  rpc UpdateStreamingConfig(UpdateUserRequest) returns (User.StreamingConfig);
-  
+  rpc GetStreamingConfig(GetStreamingConfigRequest) returns (User.StreamingConfig) {
+    option (google.api.http) = {
+      get: "/api/v1/streaming/config"
+    };
+  }
+
+  rpc UpdateStreamingConfig(UpdateUserRequest) returns (User.StreamingConfig) {
+    option (google.api.http) = {
+      put: "/api/v1/streaming/config/{user_id}"
+      body: "*"
+    };
+  }
+
   // Статистика
-  rpc UpdateUserStats(UpdateUserRequest) returns (common.ApiResponse);
-  rpc GetUserStats(GetUserRequest) returns (User.UserStats);
+  rpc UpdateUserStats(UpdateUserRequest) returns (common.ApiResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/users/{user_id}/stats"
+      body: "*"
+    };
+  }
+
+  rpc GetUserStats(GetUserRequest) returns (User.UserStats) {
+    option (google.api.http) = {
+      get: "/api/v1/users/{user_id}/stats"
+    };
+  }
 }

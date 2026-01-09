@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/haqury/user-service/internal/config"
 	"log"
 	"net/http"
 	"os"
@@ -11,20 +10,16 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/haqury/helpy"
-	"github.com/haqury/user-service/internal/controller"
+	"github.com/haqury/user-service/internal/config"
 	"github.com/haqury/user-service/internal/repository"
 	"github.com/haqury/user-service/internal/service"
 )
 
 // Application - основная структура приложения
 type Application struct {
-	Config     *config.Config
-	HTTPServer *http.Server
-	GRPCServer interface{} // Можно добавить позже
-	Services   *service.Services
-	Repos      *repository.Repositories
-	Controller *controller.Controller
+	Config   *config.Config
+	Services *service.Services
+	Repos    *repository.Repositories
 }
 
 // New создает новое приложение
@@ -35,26 +30,10 @@ func New(c *config.Config) *Application {
 	// Инициализируем сервисы
 	services := service.New(repos)
 
-	// Инициализируем контроллер
-	ctrl := controller.New(services)
-
-	// Настраиваем HTTP сервер
-	mux := ctrl.RegisterRoutes()
-
-	server := &http.Server{
-		Addr:         ":" + c.HTTPPort,
-		Handler:      mux,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
-	}
-
 	return &Application{
-		Config:     c,
-		HTTPServer: server,
-		Services:   services,
-		Repos:      repos,
-		Controller: ctrl,
+		Config:   c,
+		Services: services,
+		Repos:    repos,
 	}
 }
 
@@ -68,16 +47,32 @@ func NewWithConfig(cfgPath string, grpcPort string) (*Application, error) {
 	return New(c), nil
 }
 
-// Run запускает приложение
+// Run запускает приложение (gRPC + HTTP Gateway)
 func (app *Application) Run() error {
 	// Канал для ошибок
-	errChan := make(chan error, 1)
+	errChan := make(chan error, 2)
 
-	// Запускаем HTTP сервер в горутине
+	// Адреса серверов
+	grpcAddr := ":" + app.Config.GRPCPort
+	httpAddr := ":" + app.Config.HTTPPort
+
+	// Запускаем gRPC сервер в горутине
 	go func() {
-		log.Printf("Starting HTTP server on port %s", app.Config.HTTPPort)
-		if err := app.HTTPServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			errChan <- err
+		log.Printf("Starting gRPC server on port %s", app.Config.GRPCPort)
+		if err := StartGRPCServer(app, grpcAddr); err != nil {
+			errChan <- fmt.Errorf("gRPC server error: %w", err)
+		}
+	}()
+
+	// Даем gRPC серверу время на запуск
+	time.Sleep(100 * time.Millisecond)
+
+	// Запускаем HTTP Gateway сервер в горутине
+	go func() {
+		log.Printf("Starting HTTP Gateway on port %s", app.Config.HTTPPort)
+		ctx := context.Background()
+		if err := StartGatewayServer(ctx, "localhost"+grpcAddr, httpAddr); err != nil && err != http.ErrServerClosed {
+			errChan <- fmt.Errorf("HTTP gateway error: %w", err)
 		}
 	}()
 
@@ -87,21 +82,13 @@ func (app *Application) Run() error {
 
 	select {
 	case <-quit:
-		log.Println("Shutting down server...")
+		log.Println("Shutting down servers...")
 	case err := <-errChan:
 		log.Printf("Server error: %v", err)
-	}
-
-	// Graceful shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	if err := app.HTTPServer.Shutdown(ctx); err != nil {
-		log.Printf("Server forced to shutdown: %v", err)
 		return err
 	}
 
-	log.Println("Server stopped")
+	log.Println("Servers stopped")
 	return nil
 }
 

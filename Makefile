@@ -166,6 +166,21 @@ migrate:
 	@echo "🔄 Applying migrations..."
 	go run ./cmd/migrate
 
+seed:
+	@echo "🌱 Applying seeds..."
+	go run ./cmd/seed
+
+db-init: migrate seed
+	@echo "✅ Database initialized (migrations + seeds)"
+
+db-reset:
+	@echo "⚠️  Resetting database..."
+	@echo "Dropping and recreating database..."
+	psql -U postgres -c "DROP DATABASE IF EXISTS user_service;"
+	psql -U postgres -c "CREATE DATABASE user_service;"
+	@echo "Running migrations and seeds..."
+	$(MAKE) db-init
+
 migrate-create:
 	@echo "📝 Creating new migration..."
 	@read -p "Enter migration name: " name; \
@@ -173,11 +188,6 @@ migrate-create:
 	echo "Creating migration: $${timestamp}_$${name}.sql"; \
 	echo "-- Migration: $${timestamp}_$${name}" > db/migrations/$${timestamp}_$${name}.sql; \
 	echo "✅ Created: db/migrations/$${timestamp}_$${name}.sql"
-
-migrate-create: build
-	@echo "📝 Creating migration..."
-	@read -p "Enter migration name: " name; \
-	echo "Create file: db/migrations/$${name}_up.sql and $${name}_down.sql"
 
 worker: build
 	@echo "👷 Starting workers..."
@@ -276,7 +286,6 @@ install-deps:
 
 deps:
 	@echo "🔄 Updating dependencies..."
-	go get -u ./...
 	go mod tidy
 	go mod vendor
 	@echo "✅ Dependencies updated"
