@@ -274,10 +274,11 @@ install-deps:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	@echo "✅ Dependencies installed"
 
-deps-update:
+deps:
 	@echo "🔄 Updating dependencies..."
 	go get -u ./...
 	go mod tidy
+	go mod vendor
 	@echo "✅ Dependencies updated"
 
 init: install-deps proto

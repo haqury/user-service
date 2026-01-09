@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/haqury/helpy"
 	"github.com/haqury/user-service/internal/controller"
 	"github.com/haqury/user-service/internal/repository"
 	"github.com/haqury/user-service/internal/service"
