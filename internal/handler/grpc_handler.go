@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"log"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -56,10 +57,16 @@ func (s *UserServiceServer) GetUserByUsername(ctx context.Context, req *pb.GetUs
 
 // GetUserByClientId получает информацию о пользователе по client_id
 func (s *UserServiceServer) GetUserByClientId(ctx context.Context, req *pb.GetUserByClientIdRequest) (*pb.GetUserByClientIdResponse, error) {
+	log.Printf("[GetUserByClientId] Request: client_id=%s", req.ClientId)
+
 	userInfo, err := s.userService.GetUserByClientID(ctx, req.ClientId)
 	if err != nil {
+		log.Printf("[GetUserByClientId] Error: client_id=%s, error=%v", req.ClientId, err)
 		return nil, err
 	}
+
+	log.Printf("[GetUserByClientId] Success: client_id=%s, user_id=%s, username=%s, is_active=%v, roles=%v",
+		req.ClientId, userInfo.UserID, userInfo.Username, userInfo.IsActive, userInfo.Roles)
 
 	return &pb.GetUserByClientIdResponse{
 		UserId:   userInfo.UserID,
@@ -113,10 +120,16 @@ func (s *UserServiceServer) Logout(ctx context.Context, req *emptypb.Empty) (*he
 
 // GetStreamingConfig получает конфигурацию стриминга для пользователя
 func (s *UserServiceServer) GetStreamingConfig(ctx context.Context, req *pb.GetStreamingConfigRequest) (*pb.User_StreamingConfig, error) {
+	log.Printf("[GetStreamingConfig] Request: user_id=%s, client_id=%s", req.UserId, req.ClientId)
+
 	config, err := s.routingService.GetStreamingConfigForClient(ctx, req.UserId, req.ClientId)
 	if err != nil {
+		log.Printf("[GetStreamingConfig] Error: user_id=%s, client_id=%s, error=%v", req.UserId, req.ClientId, err)
 		return nil, err
 	}
+
+	log.Printf("[GetStreamingConfig] Success: user_id=%s, client_id=%s, video_service=%s:%d",
+		req.UserId, req.ClientId, config.ServerURL, config.ServerPort)
 
 	return &pb.User_StreamingConfig{
 		ServerUrl:      config.ServerURL,

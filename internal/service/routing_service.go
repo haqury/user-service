@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/haqury/user-service/internal/models"
 	"github.com/haqury/user-service/internal/repository"
@@ -35,26 +36,36 @@ func NewRoutingService(repos *repository.Repositories) RoutingService {
 // 3. Сортировка по приоритету (premium инстансы имеют выше приоритет)
 // 4. Выбор инстанса с наименьшей нагрузкой
 func (s *routingService) SelectVideoService(ctx context.Context, user *models.User) (*models.VideoServiceInstance, error) {
+	log.Printf("[RoutingService.SelectVideoService] Selecting for user: user_id=%s, region=%s, tier=%s",
+		user.ID, user.Region, user.SubscriptionTier)
+
 	// Получаем инстансы по региону и тарифу
 	instances, err := s.repos.VideoServiceInstance.GetByRegionAndTier(ctx, user.Region, user.SubscriptionTier)
 	if err != nil {
+		log.Printf("[RoutingService.SelectVideoService] Error getting instances: %v", err)
 		return nil, fmt.Errorf("failed to get instances: %w", err)
 	}
 
 	if len(instances) == 0 {
+		log.Printf("[RoutingService.SelectVideoService] No instances in region=%s, trying default", user.Region)
 		// Если нет подходящих инстансов в регионе пользователя, пробуем default регион
 		instances, err = s.repos.VideoServiceInstance.GetByRegionAndTier(ctx, "default", user.SubscriptionTier)
 		if err != nil {
+			log.Printf("[RoutingService.SelectVideoService] Error getting default instances: %v", err)
 			return nil, fmt.Errorf("failed to get default instances: %w", err)
 		}
 	}
 
 	if len(instances) == 0 {
+		log.Printf("[RoutingService.SelectVideoService] No available instances for tier=%s", user.SubscriptionTier)
 		return nil, errors.New("no available video service instances")
 	}
 
 	// Возвращаем первый инстанс (уже отсортирован по priority DESC, current_load ASC)
-	return instances[0], nil
+	selected := instances[0]
+	log.Printf("[RoutingService.SelectVideoService] Selected instance: id=%s, name=%s, url=%s:%d, load=%d/%d",
+		selected.ID, selected.Name, selected.ServerURL, selected.ServerPort, selected.CurrentLoad, selected.MaxCapacity)
+	return selected, nil
 }
 
 // AssignInstanceToClient назначает video-service инстанс клиенту
